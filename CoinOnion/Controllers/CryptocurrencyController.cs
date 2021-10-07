@@ -1,5 +1,8 @@
-﻿using CoinOnion.Entities;
+﻿using AutoMapper;
+using CoinOnion.Entities;
+using CoinOnion.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,23 +15,43 @@ namespace CoinOnion.Controllers
     public class CryptocurrencyController : ControllerBase
     {
         private readonly CryptocurrencyDbContext _dbContext;
-        public CryptocurrencyController(CryptocurrencyDbContext dbContext)
+        private readonly IMapper mapper;
+
+        public CryptocurrencyController(CryptocurrencyDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            this.mapper = mapper;
         }
-        public ActionResult<IEnumerable<Cryptocurrency>> GetAll()
+
+        [HttpGet]
+        public ActionResult<IEnumerable<CryptocurrencyDto>> GetAll()
         {
             var cryptocurrencies = _dbContext
                 .Cryptocurrencies
+                .Include(c => c.Comments)
+                .Include(c => c.Info)
                 .ToList();
 
-            return Ok(cryptocurrencies);
+            var cryptocurrenciesDtos = mapper.Map<List<CryptocurrencyDto>>(cryptocurrencies);
+            return Ok(cryptocurrenciesDtos);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Cryptocurrency> Get([FromRoute] int )
+        public ActionResult<CryptocurrencyDto> Get([FromRoute] int id)
         {
+            var cryptocurrency = _dbContext
+                .Cryptocurrencies
+                .Include(c => c.Comments)
+                .Include(c => c.Info)
+                .FirstOrDefault(c => c.Id == id);
 
+            if (cryptocurrency is null)
+            {
+                return NotFound();
+            }
+            var cryptocurrencyDto = mapper.Map<CryptocurrencyDto>(cryptocurrency);
+
+            return Ok(cryptocurrencyDto);
         }
     }
 }
