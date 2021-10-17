@@ -53,5 +53,20 @@ namespace CoinOnion.Controllers
 
             return Ok(cryptocurrencyDto);
         }
+
+        [HttpPost]
+        public ActionResult CreateCryptocurrency([FromBody] CreateCryptocurrencyDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var cryptocurrency = mapper.Map<Cryptocurrency>(dto);
+            _dbContext.Cryptocurrencies.Add(cryptocurrency);
+            _dbContext.SaveChanges();
+
+            return Created($"api/cryptocurrency/{cryptocurrency.Id}", null);
+        }
     }
 }

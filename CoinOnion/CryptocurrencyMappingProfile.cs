@@ -17,6 +17,10 @@ namespace CoinOnion
                 .ForMember(m => m.WebSite, c => c.MapFrom(s => s.Info.WebSite));
 
             CreateMap<Comment, CommentDto>();
+
+            CreateMap<CreateCryptocurrencyDto, Cryptocurrency>()
+                .ForMember(c => c.Info, cc => cc.MapFrom(dto => new Info()
+                { ContractAddress = dto.ContractAddress, WebSite = dto.WebSite }));
         }
             
     }
